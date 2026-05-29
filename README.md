@@ -1,36 +1,42 @@
-# test-api
+# hello-world-api
 
-Sample Node.js Express API — used for testing APD-Deploy's repo scanning,
-env var detection, and Dockerfile generation.
+Minimal Express API for testing APD-Deploy env var injection.
 
 ## Endpoints
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | /health | – | Health check (ALB target) |
-| POST | /auth/token | – | Issue JWT access + refresh tokens |
-| GET | /items | Bearer | List items |
-| GET | /items/:id | Bearer | Get one item |
-| POST | /items | Bearer | Create item |
+| Path | Returns |
+|------|---------|
+| `GET /` | JSON showing build-time and runtime vars |
+| `GET /health` | `{ "status": "ok" }` |
+
+## Expected response after deploy
+
+```json
+{
+  "message": "Hello, World!",
+  "buildTime": {
+    "description": "Baked into the image at docker build time — fixed until next build",
+    "vars": {
+      "version": "1.0.0",
+      "buildDate": "2025-05-29",
+      "gitCommit": "abc1234"
+    }
+  },
+  "runtime": {
+    "description": "Injected by the platform at container start — change in Config tab, then redeploy",
+    "vars": {
+      "APP_GREETING": "Hello",
+      "APP_NAME": "World",
+      "APP_COLOR": "blue"
+    }
+  }
+}
+```
 
 ## Local dev
 
 ```bash
-cp .env.example .env
-# Fill in values
 npm install
-npm run dev
+APP_GREETING=Hey APP_NAME=Oliver APP_COLOR=green node src/index.js
+curl http://localhost:3000/
 ```
-
-## Tests
-
-```bash
-npm test
-```
-
-## Environment variables
-
-See `.env.example` for the full reference.
-
-Runtime vars are read in `src/config.js`. Build-time args are documented
-in `.env.example` under the "Build-time variables" section.

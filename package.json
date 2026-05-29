@@ -1,24 +1,13 @@
 {
-  "name": "test-api",
+  "name": "hello-world-api",
   "version": "1.0.0",
-  "description": "Sample Express API — APD-Deploy test repo",
+  "description": "Hello World — APD-Deploy env var demo",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
-    "test": "jest --coverage"
+    "start": "node src/index.js"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "jsonwebtoken": "^9.0.2",
-    "pg": "^8.12.0"
-  },
-  "devDependencies": {
-    "jest": "^29.7.0",
-    "nodemon": "^3.1.4",
-    "supertest": "^7.0.0"
+    "express": "^4.19.2"
   },
   "engines": {
     "node": ">=20"

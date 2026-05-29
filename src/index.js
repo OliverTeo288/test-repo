@@ -1,25 +1,48 @@
 "use strict";
 
-// Load and validate config first — exits immediately if required vars are missing
-const config = require("./config");
-const app = require("./app");
+const express = require("express");
+const fs = require("fs");
 
-const port = config.port;
+const app = express();
+const port = process.env.PORT || 3000;
 
-const server = app.listen(port, "0.0.0.0", () => {
-  console.log(
-    JSON.stringify({
-      level: "info",
-      msg: "server started",
-      port,
-      env: config.nodeEnv,
-      maintenance: config.features.maintenanceMode,
-    })
-  );
+// ── Build-time variables ─────────────────────────────────────────────────────
+// Written into /app/build-info.json by the Dockerfile during `docker build`.
+// These are baked into the image — they do NOT change when the container restarts.
+let buildInfo = { version: "dev", buildDate: "unknown", gitCommit: "unknown" };
+try {
+  buildInfo = JSON.parse(fs.readFileSync("/app/build-info.json", "utf8"));
+} catch {
+  // Running locally without a Docker build — fall back to defaults above.
+}
+
+// ── Runtime variables ────────────────────────────────────────────────────────
+// Injected by the platform at container start time (APD-Deploy Config tab).
+// These can be changed between deploys without rebuilding the image.
+const runtime = {
+  APP_GREETING: process.env.APP_GREETING || "(not set)",
+  APP_NAME: process.env.APP_NAME || "(not set)",
+  APP_COLOR: process.env.APP_COLOR || "(not set)",
+};
+
+// ── Routes ───────────────────────────────────────────────────────────────────
+
+app.get("/health", (_req, res) => res.json({ status: "ok" }));
+
+app.get("/", (_req, res) => {
+  res.json({
+    message: `${runtime.APP_GREETING}, ${runtime.APP_NAME}!`,
+    buildTime: {
+      description: "Baked into the image at docker build time — fixed until next build",
+      vars: buildInfo,
+    },
+    runtime: {
+      description: "Injected by the platform at container start — change in Config tab, then redeploy",
+      vars: runtime,
+    },
+  });
 });
 
-// Graceful shutdown — ECS sends SIGTERM before killing the container
-process.on("SIGTERM", () => {
-  console.log(JSON.stringify({ level: "info", msg: "SIGTERM received, shutting down" }));
-  server.close(() => process.exit(0));
+app.listen(port, "0.0.0.0", () => {
+  console.log(JSON.stringify({ msg: "started", port, buildInfo }));
 });
