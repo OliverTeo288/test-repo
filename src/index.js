@@ -45,4 +45,9 @@ app.get("/", (_req, res) => {
 
 app.listen(port, "0.0.0.0", () => {
   console.log(JSON.stringify({ msg: "started", port, buildInfo }));
+
+  // Emit a heartbeat log every 60 seconds — useful for testing log streaming.
+  setInterval(() => {
+    console.log(JSON.stringify({ msg: "heartbeat", timestamp: new Date().toISOString() }));
+  }, 60_000);
 });
