@@ -20,7 +20,9 @@ RUN echo "{\"version\":\"${APP_VERSION}\",\"buildDate\":\"${BUILD_DATE}\",\"gitC
 COPY src/ ./src/
 
 # ── Runtime stage ─────────────────────────────────────────────────────────────
-FROM node:20-alpine
+# node:18 (Debian Bullseye) intentionally used here to test security scanning.
+# Switch back to node:20-alpine once the scan test is complete.
+FROM node:18
 
 WORKDIR /app
 COPY --from=builder /app/ .
